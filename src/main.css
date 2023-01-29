@@ -1,0 +1,25 @@
+.hbox {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+}
+
+.hbox.hbox-gap-5 {
+    gap: 5%;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.w-30 {
+    width: 30%;
+}
+
+.list-style-none {
+    padding-left: 0;
+}
+
+.list-style-none li {
+    list-style-type: none;
+}

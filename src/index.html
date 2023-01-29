@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation</title>
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section>
+                <h3>Inter-Process Communication in Electron</h3>
+            </section>
+            <section>
+                <div class="hbox hbox-gap-5">
+                    <img class="w-30" src="./Electron_Software_Framework_Logo.svg.png">
+                    <div class="text-left">
+                        <h3>What is Electron?</h3>
+                        <p>
+                            Electron is a framework for building desktop applications 
+                            using JavaScript, HTML, and CSS.
+                        </p>
+                        <p>
+                            Electron is a free and open-source software framework 
+                            developed and maintained by GitHub.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h4>Creation of applications for:</h4>
+                <ul>
+                    <li>Windows</li>
+                    <li>macOs</li>
+                    <li>Linux</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Electron applications:</h4>
+                <ul>
+                    <li>Atom</li>
+                    <li>Slack</li>
+                    <li>Visual Studio Code</li>
+                    <li>Cocos Creator</li>
+                    <li>Pixate Pixate</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Alternatives:</h4>
+                <ul>
+                    <li>NW.js</li>
+                    <li>AppJS</li>
+                    <li>Meteor</li>
+                    <li>Proton Native</li>
+                </ul>
+            </section>
+            <section>
+                <div class="hbox hbox-gap-5">
+                    <img src="./scheme.svg">
+                    <div class="text-left">
+                        <h3>Process Model</h3>
+                        <p>
+                            <small>
+                                In JavaScript, asynchrony is implemented programmatically.
+                                It runs in one process and one thread.
+                            </small>
+                        </p>
+                        <p>
+                            <small>
+                                Electron allows for true asynchrony thanks to the multi-processor model.
+                            </small>
+                        </p>
+                        <p>
+                            <small>
+                                Electron inherits its multi-process architecture from Chromium.
+                            </small>
+                        </p>
+                        <p>
+                            <small>
+                                Developer can control two types of processes: <u>main</u> and <u>renderer</u>.
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <section>
+                    <h3>Main process</h3>
+                    <ul>
+                        <li>application's entry point</li>
+                        <li>runs in a Node.js environment</li>
+                        <li>use all of Node.js APIs</li>
+                        <li>controls your application's lifecycle</li>
+                        <li>create and manage application windows</li>
+                    </ul>
+                </section>
+                <section>
+                    <p>class BrowserWindow</p>
+                    <p><small>creates an application window</small></p>
+                    <pre><code data-trim data-noescape>
+const { BrowserWindow } = require('electron')
+
+const win = new BrowserWindow({ 
+    width: 800, 
+    height: 1500 
+})
+                    </code></pre>
+                </section>
+                <section>
+                    <h3>app</h3>
+                    <p><small>control your application's event lifecycle.</small></p>
+                    <ul class="list-style-none">
+                        <li><small>Event: 'will-finish-launching'</small></li>
+                        <li><small>Event: 'ready'</small></li>
+                        <li><small>Event: 'window-all-closed'...</small></li>
+                    </ul>
+                    <pre><code data-trim data-noescape>
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit()
+})
+                    </code></pre>
+                </section>
+            </section>
+            <section>
+                <h3>Renderer process</h3>
+                <ul>
+                    <li>is responsible for rendering web content</li>
+                    <li>an HTML file is your entry point for the renderer process</li>
+                    <li>UI styling is added through Cascading Style Sheets (CSS)</li>
+                    <li>executable JavaScript code can be added through <code>&lt;script&gt;</code> elements</li>
+                </ul>
+            </section>
+            <section>
+                <section>
+                    <h4>Preload</h4>
+                    <p>
+                        are special JS scripts that will be executed before every web page load
+                    </p>
+                </section>
+                <section>
+                    <p>webPreferences</p>
+                    <pre><code data-trim data-noescape>
+const { BrowserWindow } = require('electron')
+
+const win = new BrowserWindow({
+  webPreferences: {
+    preload: 'path/to/preload.js',
+  },
+})
+                    </code></pre>
+                </section>
+                <section>
+                    <p>contextBridge.exposeInMainWorld(key, value)</p>
+                    <pre><code data-trim data-noescape>
+const { contextBridge } = require('electron')
+
+contextBridge.exposeInMainWorld('myAPI', {
+    desktop: true,
+})
+                    </code></pre>
+                    <pre><code data-trim data-noescape>
+console.log(window.myAPI)
+// => { desktop: true }
+                    </code></pre>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h3>Inter-Process Communication</h3>
+                    <p>
+                        <small>
+                            is the only way to perform many common tasks.
+                        </small>
+                    </p>
+                    <p>
+                        going through IPC channels:<br /> the <u>ipcMain</u> and <u>ipcRenderer</u> modules
+                    </p>
+                </section>
+                <section>
+                    <h4>Pattern 1: Renderer to main (one-way)</h4>
+                    <ol>
+                        <li>Listen for events with ipcMain.on</li>
+                        <li>Expose ipcRenderer.send via preload</li>
+                        <li>Build the renderer process UI</li>
+                    </ol>
+                    <img src="./pattern1.svg">
+                </section>
+                <section>
+                    <h4>Pattern 2: Renderer to main (two-way)</h4>
+                    <ol>
+                        <li>Listen for events with ipcMain.handle</li>
+                        <li>Expose ipcRenderer.invoke via preload</li>
+                        <li>Build the renderer process UI</li>
+                    </ol>
+                    <img src="./pattern2.svg">
+                </section>
+                <section>
+                    <h4>Pattern 3: Main to renderer</h4>
+                    <ol>
+                        <li>Send messages with the webContents module</li>
+                        <li>Expose ipcRenderer.on via preload</li>
+                        <li>Build the renderer process UI</li>
+                    </ol>
+                    <img src="pattern3.svg">
+                </section>
+                <section>
+                    <h4>Pattern 4: Main to renderer</h4>
+                    <ol>
+                        <li>Use the main process as a message broker between renderers. Or</li>
+                        <li>Pass a MessagePort from the main process to both renderers.</li>
+                    </ol>
+                </section>
+            </section>
+            <section data-markdown>
+                ### Thank you for your attention!
+            </section>
+        </div>
+    </div>
+</body>
+
+</html>
